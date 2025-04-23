@@ -1,8 +1,30 @@
 import { IoPencilOutline } from "react-icons/io5";
 import { CiTrash } from "react-icons/ci";
 import AddCard from "./components/AddCard";
+import { useState } from "react";
 
 function List({ obj, isActive, setActiveListId }) {
+  const [tasks, setTasks] = useState(obj.tasks);
+
+  const handleDragStart = (e, id) => {
+    e.dataTransfer.setData("text/plain", id);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, dropId) => {
+    e.preventDefault();
+    const dragId = e.dataTransfer.getData("text/plain");
+    const dragIndex = tasks.findIndex((task) => task.id === parseInt(dragId));
+    const dropIndex = tasks.findIndex((task) => task.id === dropId);
+    const updatedTasks = [...tasks];
+    const [draggedTask] = updatedTasks.splice(dragIndex, 1);
+    updatedTasks.splice(dropIndex, 0, draggedTask);
+    setTasks(updatedTasks);
+  };
+
   return (
     <div className="list w-[24%] min-h-[3rem] rounded px-2 py-3 bg-[rgb(226,232,240)]">
       <div className="header">
@@ -12,10 +34,14 @@ function List({ obj, isActive, setActiveListId }) {
         </h1>
       </div>
       <ul>
-        {obj.tasks.map((object) => (
+        {tasks.map((object) => (
           <li
             className="flex justify-between rounded p-2 shadow mb-2 bg-[rgb(248,250,252)] group"
             key={object.id}
+            draggable
+            onDragStart={(e) => handleDragStart(e, object.id)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, object.id)}
           >
             <span>{object.task}</span>
             <span className="invisible group-hover:visible flex items-center gap-1">
